@@ -92,4 +92,5 @@ const BudgetTable: React.FC<BudgetTableProps> = ({ budgetData, department }) => 
   );
 };
 
+
 export default BudgetTable;

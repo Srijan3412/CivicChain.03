@@ -10,7 +10,6 @@ import SummaryCards from '@/components/budget/SummaryCards';
 import BudgetTable from '@/components/budget/BudgetTable';
 import BudgetChart from '@/components/budget/BudgetChart';
 import AiInsights from '@/components/budget/AiInsights';
-import WardSelector from '@/components/budget/WardSelector';
 
 interface BudgetItem {
   id: string;
@@ -118,9 +117,6 @@ const Ward = () => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                <div className="md:col-span-1">
-                  <WardSelector value={ward} onChange={setWard} />
-                </div>
                 <div className="md:col-span-1">
                   <Button 
                     onClick={fetchWardData} 

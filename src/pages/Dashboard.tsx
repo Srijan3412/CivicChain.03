@@ -13,8 +13,6 @@ import BudgetChart from '@/components/budget/BudgetChart';
 import AiInsights from '@/components/budget/AiInsights';
 import { CsvImport } from '@/components/budget/CsvImport';
 import DepartmentSelector from '@/components/budget/DepartmentSelector';
-import WardSelector from '@/components/budget/WardSelector';
-
 interface BudgetItem {
   id: string;
   category: string;
@@ -130,9 +128,6 @@ const Dashboard = () => {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                 <div className="md:col-span-1">
                   <DepartmentSelector value={department} onChange={setDepartment} />
-                </div>
-                <div className="md:col-span-1">
-                  <WardSelector value={ward} onChange={setWard} />
                 </div>
                 <div className="md:col-span-1">
                   <Button 

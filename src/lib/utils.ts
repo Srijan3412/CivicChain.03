@@ -32,7 +32,7 @@ formatted = `₹${(absValue / 10000000).toFixed(1)}Cr`;
 formatted = `₹${(absValue / 100000).toFixed(1)}L`;
 } else if (absValue >= 1000) {
 formatted = `₹${(absValue / 1000).toFixed(1)}K`;
-} else {
+} else {  
 formatted = `₹${absValue}`;
 }
 

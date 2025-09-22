@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Table,
   TableBody,
@@ -7,42 +7,52 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatIndianCurrency } from '@/lib/utils';
-import { useLanguage } from '@/contexts/LanguageContext';
+} from "@/components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useLanguage } from "@/contexts/LanguageContext";
 
+// ✅ Match Supabase schema exactly
 interface BudgetItem {
   id: string;
-  category: string;
-  amount: number;
-  ward: number;
-  year: number;
+  account: string;
+  glcode: string;
+  account_budget_a: string;
+  used_amt: number;
+  remaining_amt: number;
+  budget_a?: number | null;
+  created_at?: string;
+  file_id?: string | null;
+  user_id?: string | null;
 }
 
 interface BudgetTableProps {
   budgetData: BudgetItem[];
-  department?: string;
+  department: string;
 }
 
 const BudgetTable: React.FC<BudgetTableProps> = ({ budgetData, department }) => {
   const { t } = useLanguage();
 
-  // ✅ Filter valid data (remove empty categories or NaN amounts)
-  const validBudgetData = budgetData
-    .filter(
-      (item) =>
-        item &&
-        item.category &&
-        !isNaN(Number(item.amount)) &&
-        Number(item.amount) > 0
-    )
-    // ✅ Sort by amount descending
-    .sort((a, b) => Number(b.amount) - Number(a.amount));
+  // ✅ Local helper for INR formatting
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      minimumFractionDigits: 0,
+    }).format(amount);
 
-  // ✅ Calculate total once
-  const totalBudget = validBudgetData.reduce(
-    (sum, item) => sum + Number(item.amount),
+  // ✅ Only rows with valid numeric used_amt
+  const validBudgetData = budgetData.filter(
+    (item) =>
+      item &&
+      typeof item.account_budget_a === "string" &&
+      !isNaN(Number(item.used_amt)) &&
+      Number(item.used_amt) > 0
+  );
+
+  // ✅ Total used amount for % calculation
+  const totalUsedAmount = validBudgetData.reduce(
+    (sum, item) => sum + Number(item.used_amt),
     0
   );
 
@@ -50,54 +60,51 @@ const BudgetTable: React.FC<BudgetTableProps> = ({ budgetData, department }) => 
     <Card>
       <CardHeader>
         <CardTitle>
-          {t('table.category')} – {department || t('common.unknownDepartment')}
+          {t("table.category")} - {department}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <Table>
-          <TableCaption>{t('chart.budgetDistribution')}</TableCaption>
+          <TableCaption>{t("chart.budgetDistribution")}</TableCaption>
           <TableHeader>
             <TableRow>
-              <TableHead>{t('table.category')}</TableHead>
-              <TableHead className="text-right">{t('common.amount')}</TableHead>
-              <TableHead className="text-right">{t('common.percentage')}</TableHead>
+              <TableHead>{t("table.category")}</TableHead>
+              <TableHead className="text-right">{t("common.amount")}</TableHead>
+              <TableHead className="text-right">{t("common.percentage")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {validBudgetData.length > 0 ? (
-              <>
-                {validBudgetData.map((item) => {
-                  const amount = Number(item.amount);
-                  const percentage =
-                    totalBudget > 0
-                      ? ((amount / totalBudget) * 100).toFixed(1)
-                      : '0.0';
-                  return (
-                    <TableRow key={item.id}>
-                      <TableCell className="font-medium">{item.category}</TableCell>
-                      <TableCell className="text-right">
-                        {formatIndianCurrency(amount)}
-                      </TableCell>
-                      <TableCell className="text-right">{percentage}%</TableCell>
-                    </TableRow>
-                  );
-                })}
-                {/* ✅ Total row for clarity */}
-                <TableRow className="font-bold">
-                  <TableCell>{t('common.total')}</TableCell>
-                  <TableCell className="text-right">
-                    {formatIndianCurrency(totalBudget)}
-                  </TableCell>
-                  <TableCell className="text-right">100%</TableCell>
-                </TableRow>
-              </>
+              validBudgetData.map((item) => {
+                const amount = Number(item.used_amt);
+                const percentage =
+                  totalUsedAmount > 0
+                    ? ((amount / totalUsedAmount) * 100).toFixed(1)
+                    : "0.0";
+
+                return (
+                  <TableRow key={item.id}>
+                    {/* ✅ Use account_budget_a */}
+                    <TableCell className="font-medium">
+                      {item.account_budget_a}
+                    </TableCell>
+
+                    {/* ✅ INR formatting */}
+                    <TableCell className="text-right">
+                      {formatCurrency(amount)}
+                    </TableCell>
+
+                    <TableCell className="text-right">{percentage}%</TableCell>
+                  </TableRow>
+                );
+              })
             ) : (
               <TableRow>
                 <TableCell
                   colSpan={3}
                   className="text-center text-muted-foreground py-8"
                 >
-                  {t('table.noValidData')}
+                  {t("table.noValidData")}
                 </TableCell>
               </TableRow>
             )}

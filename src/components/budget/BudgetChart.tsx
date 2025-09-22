@@ -1,12 +1,22 @@
 import React from 'react';
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  PieChart, Pie, Cell, Legend 
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { formatIndianCurrency, formatCompactNumber } from '@/lib/utils';
 
+// ✅ Match schema you already have
 interface BudgetItem {
   id: string;
   category: string;
@@ -25,13 +35,20 @@ const COLORS = [
   'hsl(var(--accent))',
   '#8884d8',
   '#82ca9d',
-  '#ffc658'
+  '#ffc658',
+  '#d45087',
+  '#2ca02c',
+  '#ff7f0e',
 ];
 
 const BudgetChart: React.FC<BudgetChartProps> = ({ budgetData }) => {
-  // ✅ Filter out invalid data and ensure numeric amounts
+  // ✅ Filter valid rows
   const validBudgetData = budgetData.filter(
-    (item) => item && item.category && !isNaN(Number(item.amount)) && Number(item.amount) > 0
+    (item) =>
+      item &&
+      item.category &&
+      !isNaN(Number(item.amount)) &&
+      Number(item.amount) > 0
   );
 
   const chartData = validBudgetData.map((item) => ({
@@ -39,14 +56,31 @@ const BudgetChart: React.FC<BudgetChartProps> = ({ budgetData }) => {
     amount: Number(item.amount),
   }));
 
-  // ✅ Sort data and compute "Others"
+  // ✅ Sort & handle top 8
   const sortedData = [...chartData].sort((a, b) => b.amount - a.amount);
   const topData = sortedData.slice(0, 8);
   const othersAmount = sortedData.slice(8).reduce((sum, item) => sum + item.amount, 0);
+  const pieData =
+    othersAmount > 0 ? [...topData, { category: 'Others', amount: othersAmount }] : topData;
 
-  const pieData = othersAmount > 0
-    ? [...topData, { category: 'Others', amount: othersAmount }]
-    : topData;
+  // ✅ Handle no data
+  if (chartData.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Budget Visualization</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground text-center py-6">
+            No valid budget data available to display charts.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // ✅ Compute total once for breakdown
+  const total = pieData.reduce((sum, item) => sum + item.amount, 0);
 
   return (
     <Card>
@@ -63,7 +97,10 @@ const BudgetChart: React.FC<BudgetChartProps> = ({ budgetData }) => {
           {/* ✅ Bar Chart */}
           <TabsContent value="bar" className="mt-6">
             <ResponsiveContainer width="100%" height={450}>
-              <BarChart data={chartData} margin={{ left: 90, right: 30, top: 20, bottom: 80 }}>
+              <BarChart
+                data={chartData}
+                margin={{ left: 90, right: 30, top: 20, bottom: 80 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
                   dataKey="category"
@@ -81,7 +118,7 @@ const BudgetChart: React.FC<BudgetChartProps> = ({ budgetData }) => {
                   contentStyle={{
                     backgroundColor: 'hsl(var(--background))',
                     border: '1px solid hsl(var(--border))',
-                    borderRadius: '6px'
+                    borderRadius: '6px',
                   }}
                 />
                 <Bar dataKey="amount" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
@@ -100,12 +137,14 @@ const BudgetChart: React.FC<BudgetChartProps> = ({ budgetData }) => {
                       cx="50%"
                       cy="50%"
                       outerRadius={100}
-                      fill="#8884d8"
                       dataKey="amount"
-                      label={false}
+                      labelLine={false}
                     >
                       {pieData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                        />
                       ))}
                     </Pie>
                     <Tooltip
@@ -113,27 +152,30 @@ const BudgetChart: React.FC<BudgetChartProps> = ({ budgetData }) => {
                       contentStyle={{
                         backgroundColor: 'hsl(var(--background))',
                         border: '1px solid hsl(var(--border))',
-                        borderRadius: '6px'
+                        borderRadius: '6px',
                       }}
                     />
                     <Legend
                       verticalAlign="bottom"
                       height={36}
+                      formatter={(value) => `${value}`}
                       wrapperStyle={{ fontSize: '12px' }}
                     />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
 
-              {/* ✅ Right-side breakdown */}
+              {/* ✅ Breakdown */}
               <div className="space-y-2">
                 <h4 className="font-medium text-sm text-muted-foreground">Budget Breakdown</h4>
                 <div className="space-y-2 max-h-80 overflow-y-auto">
                   {pieData.map((entry, index) => {
-                    const total = pieData.reduce((sum, item) => sum + item.amount, 0);
                     const percentage = ((entry.amount / total) * 100).toFixed(1);
                     return (
-                      <div key={entry.category} className="flex items-center gap-2 text-xs">
+                      <div
+                        key={entry.category}
+                        className="flex items-center gap-2 text-xs"
+                      >
                         <div
                           className="w-3 h-3 rounded-sm flex-shrink-0"
                           style={{ backgroundColor: COLORS[index % COLORS.length] }}

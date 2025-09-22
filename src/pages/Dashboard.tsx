@@ -16,8 +16,8 @@ import DepartmentSelector from '@/components/budget/DepartmentSelector';
 
 interface BudgetItem {
   id: string;
-  category: string;
-  amount: number;
+  category: string;       // mapped from account_budget_a
+  amount: number;         // mapped from used_amt
 }
 
 interface BudgetSummary {
@@ -40,9 +40,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!user) {
-      navigate('/auth');
-    }
+    if (!user) navigate('/auth');
   }, [user, navigate]);
 
   const fetchBudgetData = async () => {
@@ -64,12 +62,12 @@ const Dashboard = () => {
 
       if (error) throw error;
 
-      // Normalize data to match BudgetChart & BudgetTable expectations
+      // ✅ Normalize data to match BudgetChart & BudgetTable
       const normalizedData: BudgetItem[] =
-        (data || []).map((item: any) => ({
+        (data?.budgetData || []).map((item: any) => ({
           id: item.id,
-          category: item.account_budget_a,
-          amount: Number(item.used_amt),
+          category: item.account_budget_a,   // map from schema
+          amount: Number(item.used_amt),     // numeric conversion
         }));
 
       setBudgetData(normalizedData);
@@ -84,6 +82,7 @@ const Dashboard = () => {
       });
 
       console.log("✅ Normalized budgetData:", normalizedData);
+
     } catch (error) {
       console.error('❌ Error fetching budget data:', error);
       toast({
@@ -108,9 +107,7 @@ const Dashboard = () => {
       {/* Header */}
       <header className="border-b border-border bg-card">
         <div className="container mx-auto px-4 py-4 text-center">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            {t('dashboard.title')}
-          </h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2">{t('dashboard.title')}</h1>
           <p className="text-muted-foreground">{t('nav.welcome')}, {user.email}</p>
         </div>
       </header>
@@ -130,18 +127,24 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                <DepartmentSelector value={department} onChange={setDepartment} />
-                <Button
-                  onClick={fetchBudgetData}
-                  disabled={loading || !department}
-                  className="w-full bg-gradient-primary hover:opacity-90 shadow-md"
-                  size="lg"
-                >
-                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  <Search className="mr-2 h-4 w-4" />
-                  {loading ? t('common.loading') : t('dashboard.analyzeData')}
-                </Button>
-                <CsvImport />
+                <div className="md:col-span-1">
+                  <DepartmentSelector value={department} onChange={setDepartment} />
+                </div>
+                <div className="md:col-span-1">
+                  <Button
+                    onClick={fetchBudgetData}
+                    disabled={loading || !department}
+                    className="w-full bg-gradient-primary hover:opacity-90 shadow-md"
+                    size="lg"
+                  >
+                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    <Search className="mr-2 h-4 w-4" />
+                    {loading ? t('common.loading') : t('dashboard.analyzeData')}
+                  </Button>
+                </div>
+                <div className="md:col-span-1">
+                  <CsvImport />
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -150,9 +153,9 @@ const Dashboard = () => {
         {/* Summary Cards */}
         {summary && <SummaryCards summary={summary} />}
 
-        {/* Main Content */}
+        {/* Main Content Grid */}
         {budgetData.length > 0 && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8 animate-fade-in">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             <BudgetTable budgetData={budgetData} department={department} />
             <BudgetChart budgetData={budgetData} />
           </div>
@@ -169,11 +172,9 @@ const Dashboard = () => {
                 <Search className="h-10 w-10 text-primary" />
               </div>
               <h3 className="text-2xl font-semibold mb-4">{t('dashboard.noDataMessage')}</h3>
-              <p className="text-muted-foreground text-lg max-w-md mx-auto mb-6">
-                {t('dashboard.sampleDataNote')}
-              </p>
+              <p className="text-muted-foreground text-lg max-w-md mx-auto mb-6">{t('dashboard.sampleDataNote')}</p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Button variant="outline" size="lg" className="hover-scale">
+                <Button variant="outline" size="lg">
                   <BarChart3 className="mr-2 h-4 w-4" />
                   {t('dashboard.viewSample')}
                 </Button>

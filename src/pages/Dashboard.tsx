@@ -13,6 +13,7 @@ import BudgetChart from '@/components/budget/BudgetChart';
 import AiInsights from '@/components/budget/AiInsights';
 import { CsvImport } from '@/components/budget/CsvImport';
 import DepartmentSelector from '@/components/budget/DepartmentSelector';
+
 interface BudgetItem {
   id: string;
   category: string;
@@ -58,28 +59,41 @@ const Dashboard = () => {
     }
 
     setLoading(true);
-    
+
     try {
       const { data, error } = await supabase.functions.invoke('get-budget', {
         body: {
-          department: department,
-          ward: ward
-        }
+          department,
+          ward,
+        },
       });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
-      setBudgetData(data.budgetData || []);
-      setSummary(data.summary || null);
-      
+      // ✅ Normalize data to match BudgetChart expectations
+      const normalizedData: BudgetItem[] =
+        (data?.budgetData || []).map((item: any) => ({
+          id: item.id,
+          category: item.account_budget_a,     // map schema → chart field
+          amount: Number(item.used_amt),       // cast numeric
+          ward: item.ward || 0,
+          year: item.year || new Date().getFullYear(),
+        }));
+
+      setBudgetData(normalizedData);
+      setSummary(data?.summary || null);
+
       toast({
-        title: t('common.loading'),
-        description: t('dashboard.noDataMessage', `Found ${data.budgetData?.length || 0} budget items for ${department}.`),
+        title: t('common.success'),
+        description: t('dashboard.dataLoaded', {
+          count: normalizedData.length,
+          department,
+        }),
       });
+
+      console.log("✅ Normalized budgetData:", normalizedData);
     } catch (error) {
-      console.error('Error fetching budget data:', error);
+      console.error('❌ Error fetching budget data:', error);
       toast({
         variant: "destructive",
         title: t('errors.fetchFailed'),
@@ -105,8 +119,12 @@ const Dashboard = () => {
       <header className="border-b border-border bg-card">
         <div className="container mx-auto px-4 py-4">
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-foreground mb-2">{t('dashboard.title')}</h1>
-            <p className="text-muted-foreground">{t('nav.welcome')}, {user.email}</p>
+            <h1 className="text-3xl font-bold text-foreground mb-2">
+              {t('dashboard.title')}
+            </h1>
+            <p className="text-muted-foreground">
+              {t('nav.welcome')}, {user.email}
+            </p>
           </div>
         </div>
       </header>
@@ -122,7 +140,9 @@ const Dashboard = () => {
                 </div>
                 {t('dashboard.budgetExplorer')}
               </CardTitle>
-              <p className="text-muted-foreground">{t('dashboard.selectDepartment')}</p>
+              <p className="text-muted-foreground">
+                {t('dashboard.selectDepartment')}
+              </p>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
@@ -130,8 +150,8 @@ const Dashboard = () => {
                   <DepartmentSelector value={department} onChange={setDepartment} />
                 </div>
                 <div className="md:col-span-1">
-                  <Button 
-                    onClick={fetchBudgetData} 
+                  <Button
+                    onClick={fetchBudgetData}
                     disabled={loading || !department}
                     className="w-full bg-gradient-primary hover:opacity-90 shadow-md"
                     size="lg"
@@ -176,7 +196,9 @@ const Dashboard = () => {
               <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Search className="h-10 w-10 text-primary" />
               </div>
-              <h3 className="text-2xl font-semibold mb-4">{t('dashboard.noDataMessage')}</h3>
+              <h3 className="text-2xl font-semibold mb-4">
+                {t('dashboard.noDataMessage')}
+              </h3>
               <p className="text-muted-foreground text-lg max-w-md mx-auto mb-6">
                 {t('dashboard.sampleDataNote')}
               </p>

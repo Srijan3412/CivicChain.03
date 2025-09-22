@@ -34,17 +34,18 @@ serve(async (req) => {
     }
 
     // Build query with optional ward filter
+    // ✅ FIX: Changed filter from 'account' to 'account_budget_a' to match the front-end's department selector
     let query = supabase
       .from('municipal_budget')
       .select('*')
-      .eq('account', department);
+      .eq('account_budget_a', department); // This is the fix.
     
-    // Add ward filter if provided
-    if (ward && ward !== 'all') {
-      // Assuming ward information is stored in a column - you may need to adjust this based on your schema
-      // For now, we'll filter by a ward-related field if it exists
-      console.log('Ward filtering not implemented yet - showing all wards');
-    }
+    // Add ward filter if the `ward` column exists in your schema.
+    // As per the schema you provided, the 'ward' column does not exist.
+    // If you add it, you can uncomment this block.
+    // if (ward && ward !== 'all') {
+    //  query = query.eq('ward', ward);
+    // }
     
     const { data: budgetData, error } = await query.order('used_amt', { ascending: false });
 
@@ -68,7 +69,7 @@ serve(async (req) => {
         id: item.id,
         category: item.account_budget_a || item.glcode || 'Unknown Category',
         amount: validAmount,
-        ward: 0, // Not used anymore but kept for compatibility
+        ward: 0, // Not used but kept for compatibility with front-end interface
         year: new Date().getFullYear() // Default to current year
       };
     }) || [];
@@ -79,6 +80,8 @@ serve(async (req) => {
       item.category && 
       item.category !== 'Unknown Category'
     );
+    
+    console.log(`✅ Fetched ${validData.length} valid budget items.`);
 
     // Calculate summary statistics
     const totalBudget = validData.reduce((sum, item) => sum + item.amount, 0);

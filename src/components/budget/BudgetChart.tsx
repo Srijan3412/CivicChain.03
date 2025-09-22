@@ -176,6 +176,7 @@ const BudgetChart: React.FC<BudgetChartProps> = ({ budgetData }) => {
                         key={entry.category}
                         className="flex items-center gap-2 text-xs"
                       >
+                        
                         <div
                           className="w-3 h-3 rounded-sm flex-shrink-0"
                           style={{ backgroundColor: COLORS[index % COLORS.length] }}

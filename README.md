@@ -1,73 +1,36 @@
-# Welcome to your Lovable project
+Every year, our municipal corporations publish hundreds of pages of budget PDFs filled with numbers, codes, and jargon. Citizens pay their taxes but rarely understand:
+Where is the money actually going?
+Why are some roads still broken despite funds being allocated?
+Why do some wards seem neglected while others get more projects?
 
-## Project info
+CivicChain was built to answer these questions.
+We take those complex, inaccessible budget PDFs and turn them into something every citizen can use:
+-> Interactive dashboards, plain-language AI insights, and ward-level maps.
+    Because in a democracy, informed citizens are empowered citizens.
+    
+What CivicChain Does
+Data Pipeline -> Automatically fetches municipal budget PDFs every year
+AI Parsing & OCR -> Handles English + regional language documents
+Database + Dashboard -> Clean, searchable data for departments and wards
+AI Insights (Gemini) -> Detects anomalies (spikes/dips in spending) and explains them in simple words
+GIS Map Integration -> See exactly where money was spent in your city
 
-**URL**: https://lovable.dev/projects/62aa8913-8cef-4e1d-8456-5e9f3ce8fd6b
+Who It’s For
+Citizens -> To know how their taxes are used
+Journalists & NGOs -> To investigate spending patterns
+City Planners -> To track utilization and prevent misuse
+Students/Researchers -> To study urban governance with clean datasets
 
-## How can I edit this code?
+Tech Stack
+Frontend: React (Vite), Tailwind CSS, Recharts, Leaflet.js (maps)
+Backend: Supabase (Postgres + Edge Functions + Auth)
+AI Layer: Google Gemini API for anomaly detection & summaries
+Parsing Pipeline: Python (pdfplumber, Camelot, Tesseract OCR) + Translation API
+Hosting: Vercel (Frontend), Supabase Cloud (DB + Functions)
 
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/62aa8913-8cef-4e1d-8456-5e9f3ce8fd6b) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/62aa8913-8cef-4e1d-8456-5e9f3ce8fd6b) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+How It Works (High-Level)
+Fetch -> Download yearly municipal budget PDFs automatically
+Parse -> Convert PDFs (even in regional languages) into structured CSV
+Load -> Store clean data in Supabase (city → wards → departments)
+Analyze -> AI detects anomalies & explains trends in plain language
+Visualize -> Citizens see interactive charts, maps, and summaries 
